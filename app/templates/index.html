@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      z-index: 0;
+    }
+
+    #the3dlink {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      padding: 5px;
+      margin: 8px;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, .1);
+    }
+  </style>
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='./static/sadmap_base_style.js'></script>
+  <title>SADMAP</title>
+</head>
+
+<body>
+  <div id="map"></div>
+  <a id="the3dlink" href=".?3d">3D Mode</a>
+  <script type="text/javascript">
+    // TODO: Enter your mapbox gl access token on the line below
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZHJ5ZXJsaW50IiwiYSI6ImNrM293NWcyMzI1N3ozb2tveXZlOGZvbGEifQ.8RpXmSagHLMD7D3xqFGb_w';
+
+    let sadmapBaseStyleEdit = SADMAP_BASE_STYLE;
+    sadmapBaseStyleEdit["sources"] = {
+      "composite": {
+        "type": "geojson",
+        "data": "./static/umbc.geojson",
+        "generateId": true
+      }
+    };
+
+    // delete source-layer keys (quirk of Mapbox Studio...)
+    for (a of sadmapBaseStyleEdit.layers) { delete a["source-layer"]; }
+
+    // enable 3d mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const param3d = urlParams.get('3d');
+    if (param3d != null) {
+      sadmapBaseStyleEdit.layers.find(x => x.id == "buildings 3d").layout = {};
+      sadmapBaseStyleEdit.layers.find(x => x.id == "buildings upper layer").layout = { "visibility": "none" };
+      sadmapBaseStyleEdit.layers.find(x => x.id == "buildings").layout = { "visibility": "none" };
+      document.querySelector("#the3dlink").setAttribute("href", ".?");
+      document.querySelector("#the3dlink").text = "Flat Mode";
+    }
+
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: SADMAP_BASE_STYLE,
+      center: [-76.71255, 39.25432],
+      zoom: 13
+    });
+
+    var nav = new mapboxgl.NavigationControl();
+    map.addControl(nav, 'top-right');
+  </script>
+</body>
+
+</html>
